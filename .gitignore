@@ -35,7 +35,6 @@ yarn-error.log*
 # database
 /prisma/dev.db
 /prisma/dev.db-journal
-/prisma/migrations/**/migration_lock.toml
 
 # typescript
 *.tsbuildinfo

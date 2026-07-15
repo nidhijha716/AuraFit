@@ -1,0 +1,74 @@
+import { useId } from "react";
+import { cn } from "@/lib/utils/cn";
+
+interface AuraFitMarkProps {
+  className?: string;
+  size?: number;
+  title?: string;
+}
+
+/**
+ * Official AuraFit brand mark:
+ * stylized A · motion ring · focus dot (copper / peach gradient).
+ */
+export function AuraFitMark({
+  className,
+  size = 36,
+  title = "AuraFit",
+}: AuraFitMarkProps) {
+  const uid = useId().replace(/:/g, "");
+  const gradientId = `aurafit-copper-${uid}`;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn("shrink-0", className)}
+      role="img"
+      aria-label={title}
+    >
+      <title>{title}</title>
+      <defs>
+        <linearGradient
+          id={gradientId}
+          x1="6"
+          y1="58"
+          x2="58"
+          y2="6"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#b86a42" />
+          <stop offset="40%" stopColor="#e0a07a" />
+          <stop offset="100%" stopColor="#f5d4b8" />
+        </linearGradient>
+      </defs>
+
+      {/* Motion ring */}
+      <ellipse
+        cx="32"
+        cy="34"
+        rx="27"
+        ry="16"
+        transform="rotate(-32 32 34)"
+        stroke={`url(#${gradientId})`}
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        opacity="0.92"
+      />
+
+      {/* Stylized A with open counter (evenodd) */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M32 7.5c1.35 0 2.55.72 3.18 1.88l16.1 40.85c.62 1.14.2 2.56-.94 3.18-1.14.62-2.56.2-3.18-.94L44.2 44.2H19.8l-2.96 8.27c-.62 1.14-2.04 1.56-3.18.94-1.14-.62-1.56-2.04-.94-3.18L28.82 9.38C29.45 8.22 30.65 7.5 32 7.5Zm-7.55 29.2 7.55-21.1 7.55 21.1H24.45Z"
+        fill={`url(#${gradientId})`}
+      />
+
+      {/* Focus dot */}
+      <circle cx="32" cy="29" r="3.6" fill={`url(#${gradientId})`} />
+    </svg>
+  );
+}

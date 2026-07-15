@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  passwordHash       String   @map("password_hash")
+  goals              String   @default("[\"stay_active\"]")
+  experienceLevel    String   @default("beginner") @map("experience_level")
+  workoutDays        String   @default("[1,3,5]") @map("workout_days")
+  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
+  heightCm           Float?   @map("height_cm")
+  weightKg           Float?   @map("weight_kg")
+  sex                String?  @map("sex")
+  age                Int?
+  activityLevel      String?  @map("activity_level")
+  themePreset        String   @default("classic") @map("theme_preset")
+  reminderEnabled    Boolean  @default(false) @map("reminder_enabled")
+  reminderTimeLocal  String   @default("18:00") @map("reminder_time_local")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  dayRoutines         DayRoutine[]
+  workoutSessions     WorkoutSession[]
+  dailyChecklists     DailyChecklist[]
+  passwordResetTokens PasswordResetToken[]
+  personalRecords     PersonalRecord[]
+
+  @@map("users")
+}
+
+model DayRoutine {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      @map("day_of_week")
+  name      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+  exercises RoutineExercise[]
+
+  @@unique([userId, dayOfWeek])
+  @@index([userId])
+  @@map("day_routines")
+}
+
+model RoutineExercise {
+  id         String     @id @default(uuid())
+  routineId  String     @map("routine_id")
+  routine    DayRoutine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exerciseId String     @map("exercise_id")
+  targetSets Int        @map("target_sets")
+  targetReps String     @map("target_reps")
+  sortOrder  Int        @map("sort_order")
+
+  @@index([routineId])
+  @@map("routine_exercises")
+}
+
+model WorkoutSession {
+  id                 String   @id @default(uuid())
+  userId             String   @map("user_id")
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutId          String   @map("workout_id")
+  workoutName        String   @map("workout_name")
+  startedAt          DateTime @map("started_at")
+  completedAt        DateTime @map("completed_at")
+  durationMinutes            Int      @map("duration_minutes")
+  exercisesCompleted         String   @map("exercises_completed")
+  estimatedCaloriesBurned    Int?     @map("estimated_calories_burned")
+
+  @@index([userId])
+  @@map("workout_sessions")
+}
+
+model DailyChecklist {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        String
+  dayOfWeek   Int      @map("day_of_week")
+  routineName String   @map("routine_name")
+  allComplete Boolean  @default(false) @map("all_complete")
+  completedAt DateTime? @map("completed_at")
+  exercises   ChecklistExerciseEntry[]
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("daily_checklists")
+}
+
+model ChecklistExerciseEntry {
+  id          String         @id @default(uuid())
+  checklistId String         @map("checklist_id")
+  checklist   DailyChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  exerciseId  String         @map("exercise_id")
+  completed   Boolean        @default(false)
+  completedAt DateTime?      @map("completed_at")
+  sets        SetLogEntry[]
+
+  @@index([checklistId])
+  @@map("checklist_exercise_entries")
+}
+
+model SetLogEntry {
+  id                    String                 @id @default(uuid())
+  checklistExerciseId   String                 @map("checklist_exercise_id")
+  checklistExercise     ChecklistExerciseEntry @relation(fields: [checklistExerciseId], references: [id], onDelete: Cascade)
+  setNumber             Int                    @map("set_number")
+  reps                  Int                    @default(0)
+  completed             Boolean                @default(false)
+  weightKg              Float?                 @map("weight_kg")
+
+  @@index([checklistExerciseId])
+  @@map("set_log_entries")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
+}
+
+model PersonalRecord {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String   @map("exercise_id")
+  weightKg   Float    @map("weight_kg")
+  reps       Int
+  achievedAt DateTime @map("achieved_at")
+  sourceDate String?  @map("source_date")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@map("personal_records")
+}
